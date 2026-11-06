@@ -37,7 +37,44 @@ Or at the prompt of a Claude Code terminal session (the `claude` CLI; `/plugin` 
 
 `basilnewagesmb/status-band` is the GitHub repository; `claude-status-band` is the marketplace name it declares. Then reload the VS Code window or start a new session so the band loads.
 
-In the desktop app, where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `basilnewagesmb/status-band`, then **Add plugin**.
+### In VS Code
+
+The Claude chat panel in VS Code has no `/plugin` command, so install from VS Code's terminal:
+
+1. Open a terminal: `` Ctrl+` `` (or **Terminal → New Terminal**).
+2. Add the marketplace and install the plugin:
+
+   ```
+   claude plugin marketplace add basilnewagesmb/status-band
+   claude plugin install status-band@claude-status-band
+   ```
+
+   If the terminal says `claude` is not recognized, the CLI is not on your PATH. On Windows, use its full path instead (PowerShell):
+
+   ```powershell
+   & "$env:USERPROFILE\.local\bin\claude.exe" plugin marketplace add basilnewagesmb/status-band
+   & "$env:USERPROFILE\.local\bin\claude.exe" plugin install status-band@claude-status-band
+   ```
+
+3. Reload VS Code: `Ctrl+Shift+P` → **Developer: Reload Window**.
+4. Open the Claude panel and send a message. After the first reply, the usage line shows under the prompt:
+
+   ```
+   5h 62% · 7d 18% · ctx 41% (82.4k/200k) · 1.2M tok · $1.84
+   ```
+
+   VS Code shows this one-line status; the two-row band with bars draws in the terminal CLI and the desktop app.
+
+To update to a newer version later, run these in the terminal, then reload the window:
+
+```
+claude plugin marketplace update claude-status-band
+claude plugin update status-band@claude-status-band
+```
+
+### In the desktop app
+
+Where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `basilnewagesmb/status-band`, then **Add plugin**.
 
 ## Develop
 
