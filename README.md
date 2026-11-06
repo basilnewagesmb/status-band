@@ -1,15 +1,23 @@
 # status-band
 
-A Claude Code mod that keeps a one-line summary of your repository beside the prompt:
+A Claude Code mod that shows how much of your Claude usage you've spent, in a band above the prompt:
 
 ```
-⎇ main · 3 changed · ✓ typecheck+lint+test at 14:02
+Plan    5h ██████░░░░ 62% ↻ in 1h 12m   7d ██░░░░░░░░ 18% ↻ Fri 09:00
+Context ████░░░░░░ 41% 82.4k / 200k   Session 1.2M tokens (45k out) · $1.84
 ```
 
-- **Branch and changed files**: read from git when the session starts, after every Bash or PowerShell call, and when each turn ends. Shows `clean` when nothing has changed.
-- **Last check result**: any shell command that runs `pnpm typecheck`, `pnpm lint` or `pnpm test` is recorded as ✓ passed or ✗ failed, with the time it finished. Until one runs, it shows `checks not run`.
+- **Plan**: each rate-limit window of your subscription (5-hour, 7-day), how full it is and when it resets. Reported by the API after the first reply; API-key sessions have no plan windows.
+- **Context**: how much of the model's context window the conversation fills.
+- **Session**: tokens summed over every model request this session (input, cache and output), and the session cost.
 
-In the terminal and the desktop app it draws as a band above the prompt. The same text is also pinned as a status line under the prompt, so it shows in VS Code too.
+Bars turn amber at 50% and red at 80%. The figures update after each turn and whenever a plan window moves.
+
+In the terminal and the desktop app it draws as a band above the prompt. A one-line version is also pinned as the status line, so it shows in VS Code too:
+
+```
+5h 62% · 7d 18% · ctx 41% (82.4k/200k) · 1.2M tok · $1.84
+```
 
 ## Install
 
