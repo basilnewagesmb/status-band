@@ -2,6 +2,10 @@
 
 A Claude Code mod that shows how much of your Claude usage you've spent, in one slim line above the prompt:
 
+![status-band above the prompt in VS Code](docs/screenshot-vscode.png)
+
+In a wider pane each figure gets a bar too:
+
 ```
 5h ━───── 17% ↻31m · 7d ━───── 10% ↻Thu · ctx ━───── 7% · 67.6k tok · $0.60
 ```
