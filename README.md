@@ -21,21 +21,23 @@ In the terminal and the desktop app it draws as a band above the prompt. A one-l
 
 ## Install
 
-At the prompt of a Claude Code terminal session:
-
-```
-/plugin install status-band --marketplace basilnewagesmb/claude-status-band
-```
-
-Answer `y` to add the marketplace, then press Enter to pick the user scope.
-
 From a shell:
 
 ```
-claude plugin install status-band --marketplace basilnewagesmb/claude-status-band
+claude plugin marketplace add basilnewagesmb/status-band
+claude plugin install status-band@claude-status-band
 ```
 
-In the desktop app, where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `basilnewagesmb/claude-status-band`, then **Add plugin**.
+Or at the prompt of a Claude Code terminal session:
+
+```
+/plugin marketplace add basilnewagesmb/status-band
+/plugin install status-band@claude-status-band
+```
+
+`basilnewagesmb/status-band` is the GitHub repository; `claude-status-band` is the marketplace name it declares. Then reload the VS Code window or start a new session so the band loads.
+
+In the desktop app, where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `basilnewagesmb/status-band`, then **Add plugin**.
 
 ## Develop
 
