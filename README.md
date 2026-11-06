@@ -28,7 +28,7 @@ claude plugin marketplace add basilnewagesmb/status-band
 claude plugin install status-band@claude-status-band
 ```
 
-Or at the prompt of a Claude Code terminal session:
+Or at the prompt of a Claude Code terminal session (the `claude` CLI; `/plugin` is not available in the VS Code chat panel, so use the shell commands above there):
 
 ```
 /plugin marketplace add basilnewagesmb/status-band
