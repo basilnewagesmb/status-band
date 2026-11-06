@@ -55,16 +55,27 @@ The Claude chat panel in VS Code has no `/plugin` command, so install from VS Co
 3. Reload VS Code: `Ctrl+Shift+P` → **Developer: Reload Window**.
 4. Open the Claude panel and send a message. The usage band shows above the prompt.
 
-To update to a newer version later, run these in the terminal, then reload the window:
+### In the desktop app
+
+Where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `basilnewagesmb/status-band`, then **Add plugin**.
+
+## Update
+
+To get a newer version, run these in a terminal (VS Code: `` Ctrl+` ``), then reload the window (`Ctrl+Shift+P` → **Developer: Reload Window**) or start a new session:
 
 ```
 claude plugin marketplace update claude-status-band
 claude plugin update status-band@claude-status-band
 ```
 
-### In the desktop app
+Full path on Windows, if `claude` is not on your PATH (PowerShell):
 
-Where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `basilnewagesmb/status-band`, then **Add plugin**.
+```powershell
+& "$env:USERPROFILE\.local\bin\claude.exe" plugin marketplace update claude-status-band
+& "$env:USERPROFILE\.local\bin\claude.exe" plugin update status-band@claude-status-band
+```
+
+The first command fetches the latest from GitHub; the second installs it. If the band still looks like the old version after reloading, the plugin's `version` was probably not raised: see **Publishing a new version** below.
 
 ## Develop
 
@@ -72,3 +83,9 @@ Where `/plugin` does not run: click **+** next to the prompt box, then **Plugins
 claude plugin validate .
 claude plugin test .
 ```
+
+### Publishing a new version
+
+1. Raise `version` in [.claude-plugin/plugin.json](.claude-plugin/plugin.json) (for example `0.3.0` → `0.4.0`). `claude plugin update` compares versions, so without this, installed copies keep the old code.
+2. Commit and push to `main` on `basilnewagesmb/status-band`.
+3. Run the two commands under **Update** and reload.
