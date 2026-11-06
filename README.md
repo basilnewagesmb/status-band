@@ -19,7 +19,17 @@ Bars and percentages turn amber at 50% and red at 80%. In narrow panes (under 76
 
 ## Install
 
-From a shell:
+### Quick install: ask Claude
+
+Paste this into Claude Code (terminal, VS Code or desktop app):
+
+```
+install https://github.com/basilnewagesmb/status-band plugin
+```
+
+Claude adds the marketplace and installs the plugin. Approve the commands when it asks: a plugin runs code in every session, so in auto mode Claude may stop and give you the commands to run yourself instead (they are below). Then reload the VS Code window or start a new session.
+
+### From a shell
 
 ```
 claude plugin marketplace add basilnewagesmb/status-band
