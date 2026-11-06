@@ -1,6 +1,6 @@
 {
   "name": "status-band",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A band above the prompt showing Claude token usage: plan limits (5h / 7d), context window fill, session tokens and cost.",
   "types": "./types/index.d.ts"
 }
