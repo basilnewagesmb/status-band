@@ -58,21 +58,6 @@ export function totalTokens(t: TokenTotals): number {
   return t.input + t.output + t.cacheRead + t.cacheWrite
 }
 
-/** One plain line for the status line (VS Code shows only this). */
-export function summary(m: Measure | null, t: TokenTotals): string | undefined {
-  const parts: string[] = []
-  for (const w of m?.plan ?? []) parts.push(`${windowLabel(w.kind)} ${Math.round(w.percentUsed)}%`)
-  if (m?.contextPercent !== undefined) {
-    parts.push(
-      `ctx ${m.contextPercent}%` +
-        (m.contextTokens !== undefined ? ` (${formatTokens(m.contextTokens)}/${formatTokens(m.contextWindow)})` : ''),
-    )
-  }
-  if (t.requests > 0) parts.push(`${formatTokens(totalTokens(t))} tok`)
-  if (m?.costUsd !== undefined && m.costUsd > 0) parts.push(`$${m.costUsd.toFixed(2)}`)
-  return parts.length === 0 ? undefined : parts.join(' · ')
-}
-
 // ---------------------------------------------------------------- measuring
 
 function toMeasure(context: SessionContextUsage, rateLimits: readonly SessionRateLimit[], cost?: SessionCost): Measure {
@@ -89,7 +74,6 @@ function toMeasure(context: SessionContextUsage, rateLimits: readonly SessionRat
 
 async function save($: EngineInterface, m: Measure): Promise<void> {
   await update($, measure, () => m)
-  $.ui.status(summary(m, await read($, tokens)))
 }
 
 // ---------------------------------------------------------------- hooks
@@ -97,6 +81,7 @@ async function save($: EngineInterface, m: Measure): Promise<void> {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const result = await next(e)
+    $.ui.status(undefined) // clear the status line an earlier version pinned
     try {
       const u = await $.session.usage()
       await save($, toMeasure(u.context, u.rateLimits, u.cost))
@@ -143,12 +128,10 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column">
-        <Box>
-          <Text bold>Plan   </Text>
-          {plan.length === 0 ? (
-            <Text dimColor>limits show after the first reply (subscription only)</Text>
-          ) : (
-            plan.map((w, i) => {
+        {plan.length > 0 && (
+          <Box>
+            <Text bold>Plan   </Text>
+            {plan.map((w, i) => {
               const reset = formatReset(w.resetsAt, now)
               return (
                 <Text key={w.kind}>
@@ -159,9 +142,9 @@ export const register: Register = on => {
                   {reset !== undefined && <Text dimColor> ↻ {reset}</Text>}
                 </Text>
               )
-            })
-          )}
-        </Box>
+            })}
+          </Box>
+        )}
         <Box>
           <Text bold>Context</Text>
           {m?.contextPercent !== undefined ? (

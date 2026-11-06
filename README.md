@@ -13,11 +13,7 @@ Context ████░░░░░░ 41% 82.4k / 200k   Session 1.2M tokens (4
 
 Bars turn amber at 50% and red at 80%. The figures update after each turn and whenever a plan window moves.
 
-In the terminal and the desktop app it draws as a band above the prompt. A one-line version is also pinned as the status line, so it shows in VS Code too:
-
-```
-5h 62% · 7d 18% · ctx 41% (82.4k/200k) · 1.2M tok · $1.84
-```
+It draws above the prompt in the terminal, the desktop app and VS Code. The Plan row appears only when your account reports plan limits (a Pro or Max subscription, after the first reply).
 
 ## Install
 
@@ -57,13 +53,7 @@ The Claude chat panel in VS Code has no `/plugin` command, so install from VS Co
    ```
 
 3. Reload VS Code: `Ctrl+Shift+P` → **Developer: Reload Window**.
-4. Open the Claude panel and send a message. After the first reply, the usage line shows under the prompt:
-
-   ```
-   5h 62% · 7d 18% · ctx 41% (82.4k/200k) · 1.2M tok · $1.84
-   ```
-
-   VS Code shows this one-line status; the two-row band with bars draws in the terminal CLI and the desktop app.
+4. Open the Claude panel and send a message. The usage band shows above the prompt.
 
 To update to a newer version later, run these in the terminal, then reload the window:
 

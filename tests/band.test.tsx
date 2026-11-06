@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'claude-code/testing'
 
-import { bar, formatReset, formatTokens, level, summary, windowLabel } from '../hooks/register'
+import { bar, formatReset, formatTokens, level, windowLabel } from '../hooks/register'
 
 const BAND = {
   plugin: 'status-band',
@@ -14,8 +14,6 @@ const BAND = {
     view: {},
   },
 } as const
-
-const NO_TOKENS = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, requests: 0 }
 
 describe('formatting', () => {
   test('tokens read short', () => {
@@ -51,33 +49,8 @@ describe('formatting', () => {
   })
 })
 
-describe('summary', () => {
-  test('says nothing before any measurement', () => {
-    expect(summary(null, NO_TOKENS)).toBe(undefined)
-  })
-
-  test('lists plan windows, context, tokens and cost', () => {
-    expect(
-      summary(
-        {
-          plan: [
-            { kind: 'five_hour', percentUsed: 62.4 },
-            { kind: 'seven_day', percentUsed: 18 },
-          ],
-          contextTokens: 82_400,
-          contextWindow: 200_000,
-          contextPercent: 41,
-          costUsd: 1.844,
-        },
-        { input: 2_000, output: 45_000, cacheRead: 1_100_000, cacheWrite: 50_000, requests: 9 },
-      ),
-    ).toBe('5h 62% · 7d 18% · ctx 41% (82.4k/200k) · 1.2M tok · $1.84')
-  })
-})
-
 test('the band draws the plan windows and context after a measurement', async ($, on) => {
   on('session.measure', (_, e) => ({ changed: e.changed }))
-  on('ui.status', () => ({ value: undefined }))
   mock.clock(on)
 
   await $.session.measure({
@@ -99,9 +72,8 @@ test('the band draws the plan windows and context after a measurement', async ($
   }
 })
 
-test('without a subscription the band says plan limits are not reported yet', async ($, on) => {
+test('without plan limits the band shows only the context row', async ($, on) => {
   on('session.measure', (_, e) => ({ changed: e.changed }))
-  on('ui.status', () => ({ value: undefined }))
   mock.clock(on)
 
   await $.session.measure({
@@ -111,6 +83,7 @@ test('without a subscription the band says plan limits are not reported yet', as
   })
 
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect((await ui.find({ type: 'Text', text: /limits show/ }))?.text).toContain('first reply')
+  expect(await ui.find({ type: 'Text', text: /Plan/ })).toBe(undefined)
+  expect((await ui.find({ type: 'Text', text: /5%/ }))?.text).toContain('5%')
   await ui.unmount()
 })
