@@ -8,7 +8,9 @@ const EMPTY: TokenTotals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, r
 const measure = atom({ plugin: 'status-band', key: 'measure' } as const, null)
 const tokens = atom({ plugin: 'status-band', key: 'tokens' } as const, EMPTY)
 
-const BAR_WIDTH = 10
+const BAR_WIDTH = 6
+/** Below this many columns the band drops its bars and keeps the numbers. */
+const BARS_MIN_COLUMNS = 76
 
 // ---------------------------------------------------------------- formatting
 
@@ -29,10 +31,10 @@ function trim(n: number): string {
   return n >= 100 ? String(Math.round(n)) : n.toFixed(1).replace(/\.0$/, '')
 }
 
-/** A bar of BAR_WIDTH cells, filled to `percent`. */
-export function bar(percent: number, width = BAR_WIDTH): string {
-  const filled = Math.max(0, Math.min(width, Math.round((percent / 100) * width)))
-  return '█'.repeat(filled) + '░'.repeat(width - filled)
+/** A thin bar of `width` cells: the filled part and the rest, drawn in two colors. */
+export function bar(percent: number, width = BAR_WIDTH): [filled: string, rest: string] {
+  const n = Math.max(0, Math.min(width, Math.round((percent / 100) * width)))
+  return ['━'.repeat(n), '─'.repeat(width - n)]
 }
 
 /** Green under 50%, amber under 80%, red from there. */
@@ -40,18 +42,15 @@ export function level(percent: number): 'success' | 'warning' | 'error' {
   return percent < 50 ? 'success' : percent < 80 ? 'warning' : 'error'
 }
 
-/** When a window resets: `in 42m`, `in 3h 10m`, or `Fri 09:00` past a day. */
+/** When a window resets, short: `42m`, `3h10m`, or the weekday past a day. */
 export function formatReset(iso: string | undefined, now: number): string | undefined {
   if (iso === undefined) return undefined
   const at = Date.parse(iso)
   if (Number.isNaN(at)) return undefined
   const mins = Math.max(0, Math.round((at - now) / 60_000))
-  if (mins < 60) return `in ${mins}m`
-  if (mins < 24 * 60) return `in ${Math.floor(mins / 60)}h ${mins % 60}m`
-  const d = new Date(at)
-  const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${day} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  if (mins < 60) return `${mins}m`
+  if (mins < 24 * 60) return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, '0')}m`
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(at).getDay()]
 }
 
 export function totalTokens(t: TokenTotals): number {
@@ -124,53 +123,55 @@ export const register: Register = on => {
 
     const { Box, Text } = $.ui.resolve(e)
     const now = await $.clock.now()
-    const plan = m?.plan ?? []
+    const hasBars = e.props.bodyColumns >= BARS_MIN_COLUMNS
+
+    const gauge = (key: string, label: string, percent: number, reset?: string) => {
+      const [filled, rest] = bar(percent)
+      return (
+        <Text key={key}>
+          <Text dimColor>{label} </Text>
+          {hasBars && (
+            <Text>
+              <Text color={level(percent)}>{filled}</Text>
+              <Text dimColor>{rest} </Text>
+            </Text>
+          )}
+          <Text color={level(percent)}>{Math.round(percent)}%</Text>
+          {reset !== undefined && <Text dimColor> ↻{reset}</Text>}
+        </Text>
+      )
+    }
+
+    const parts = [
+      ...(m?.plan ?? []).map(w => gauge(w.kind, windowLabel(w.kind), w.percentUsed, formatReset(w.resetsAt, now))),
+      ...(m?.contextPercent !== undefined ? [gauge('ctx', 'ctx', m.contextPercent)] : []),
+      ...(t.requests > 0
+        ? [
+            <Text key="tok">
+              {formatTokens(totalTokens(t))}
+              <Text dimColor> tok</Text>
+            </Text>,
+          ]
+        : []),
+      ...(m?.costUsd !== undefined && m.costUsd > 0
+        ? [
+            <Text key="usd" dimColor>
+              ${m.costUsd.toFixed(2)}
+            </Text>,
+          ]
+        : []),
+    ]
 
     return (
-      <Box flexDirection="column">
-        {plan.length > 0 && (
-          <Box>
-            <Text bold>Plan   </Text>
-            {plan.map((w, i) => {
-              const reset = formatReset(w.resetsAt, now)
-              return (
-                <Text key={w.kind}>
-                  {i > 0 && <Text dimColor>   </Text>}
-                  <Text dimColor>{windowLabel(w.kind)} </Text>
-                  <Text color={level(w.percentUsed)}>{bar(w.percentUsed)}</Text>
-                  <Text color={level(w.percentUsed)} bold> {Math.round(w.percentUsed)}%</Text>
-                  {reset !== undefined && <Text dimColor> ↻ {reset}</Text>}
-                </Text>
-              )
-            })}
-          </Box>
-        )}
-        <Box>
-          <Text bold>Context</Text>
-          {m?.contextPercent !== undefined ? (
-            <Text>
-              <Text> </Text>
-              <Text color={level(m.contextPercent)}>{bar(m.contextPercent)}</Text>
-              <Text color={level(m.contextPercent)} bold> {m.contextPercent}%</Text>
-              {m.contextTokens !== undefined && (
-                <Text dimColor>
-                  {' '}
-                  {formatTokens(m.contextTokens)} / {formatTokens(m.contextWindow)}
-                </Text>
-              )}
+      <Box>
+        <Text>
+          {parts.map((part, i) => (
+            <Text key={`p${i}`}>
+              {i > 0 && <Text dimColor> · </Text>}
+              {part}
             </Text>
-          ) : (
-            <Text dimColor> empty</Text>
-          )}
-          {t.requests > 0 && (
-            <Text>
-              <Text dimColor>   Session </Text>
-              <Text color="claude">{formatTokens(totalTokens(t))}</Text>
-              <Text dimColor> tokens ({formatTokens(t.output)} out)</Text>
-            </Text>
-          )}
-          {m?.costUsd !== undefined && m.costUsd > 0 && <Text dimColor> · ${m.costUsd.toFixed(2)}</Text>}
-        </Box>
+          ))}
+        </Text>
       </Box>
     )
   })

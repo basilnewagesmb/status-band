@@ -1,19 +1,17 @@
 # status-band
 
-A Claude Code mod that shows how much of your Claude usage you've spent, in a band above the prompt:
+A Claude Code mod that shows how much of your Claude usage you've spent, in one slim line above the prompt:
 
 ```
-Plan    5h ██████░░░░ 62% ↻ in 1h 12m   7d ██░░░░░░░░ 18% ↻ Fri 09:00
-Context ████░░░░░░ 41% 82.4k / 200k   Session 1.2M tokens (45k out) · $1.84
+5h ━───── 17% ↻31m · 7d ━───── 10% ↻Thu · ctx ━───── 7% · 67.6k tok · $0.60
 ```
 
-- **Plan**: each rate-limit window of your subscription (5-hour, 7-day), how full it is and when it resets. Reported by the API after the first reply; API-key sessions have no plan windows.
-- **Context**: how much of the model's context window the conversation fills.
-- **Session**: tokens summed over every model request this session (input, cache and output), and the session cost.
+- **5h / 7d**: your subscription's rate-limit windows, how full each is and when it resets (`31m`, `3h05m`, or the weekday). Shown only when your account reports them (a Pro or Max subscription, after the first reply).
+- **ctx**: how much of the model's context window the conversation fills.
+- **tok**: tokens summed over every model request this session (input, cache and output).
+- **$**: the session's cost.
 
-Bars turn amber at 50% and red at 80%. The figures update after each turn and whenever a plan window moves.
-
-It draws above the prompt in the terminal, the desktop app and VS Code. The Plan row appears only when your account reports plan limits (a Pro or Max subscription, after the first reply).
+Bars and percentages turn amber at 50% and red at 80%. In narrow panes (under 76 columns) the bars drop out and the numbers stay. The figures update after each turn and whenever a plan window moves. It draws in the terminal, the desktop app and VS Code.
 
 ## Install
 

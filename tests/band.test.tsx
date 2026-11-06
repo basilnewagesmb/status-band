@@ -24,9 +24,9 @@ describe('formatting', () => {
   })
 
   test('bars fill to the percent', () => {
-    expect(bar(0)).toBe('░░░░░░░░░░')
-    expect(bar(62)).toBe('██████░░░░')
-    expect(bar(140)).toBe('██████████')
+    expect(bar(0)).toEqual(['', '──────'])
+    expect(bar(50)).toEqual(['━━━', '───'])
+    expect(bar(140)).toEqual(['━━━━━━', ''])
   })
 
   test('colors step at 50 and 80', () => {
@@ -43,8 +43,8 @@ describe('formatting', () => {
 
   test('reset times count down within a day', () => {
     const now = Date.parse('2026-11-06T10:00:00Z')
-    expect(formatReset('2026-11-06T10:42:00Z', now)).toBe('in 42m')
-    expect(formatReset('2026-11-06T13:10:00Z', now)).toBe('in 3h 10m')
+    expect(formatReset('2026-11-06T10:42:00Z', now)).toBe('42m')
+    expect(formatReset('2026-11-06T13:05:00Z', now)).toBe('3h05m')
     expect(formatReset(undefined, now)).toBe(undefined)
   })
 })
@@ -67,7 +67,7 @@ test('the band draws the plan windows and context after a measurement', async ($
     const ui = await $.ui.mount({ ...BAND, surface })
     expect((await ui.find({ type: 'Text', text: /62%/ }))?.text).toContain('62%')
     expect((await ui.find({ type: 'Text', text: /18%/ }))?.text).toContain('18%')
-    expect((await ui.find({ type: 'Text', text: /82\.4k/ }))?.text).toContain('200k')
+    expect((await ui.find({ type: 'Text', text: /ctx/ }))?.text).toContain('41%')
     await ui.unmount()
   }
 })
@@ -85,5 +85,21 @@ test('without plan limits the band shows only the context row', async ($, on) =>
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /Plan/ })).toBe(undefined)
   expect((await ui.find({ type: 'Text', text: /5%/ }))?.text).toContain('5%')
+  await ui.unmount()
+})
+
+test('a narrow band drops the bars and keeps the numbers', async ($, on) => {
+  on('session.measure', (_, e) => ({ changed: e.changed }))
+  mock.clock(on)
+
+  await $.session.measure({
+    context: { tokens: 10_000, window: 200_000, percent: 50 },
+    rateLimits: [],
+    changed: ['context'],
+  })
+
+  const ui = await $.ui.mount({ ...BAND, props: { ...BAND.props, bodyColumns: 50 }, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /50%/ }))?.text).toContain('50%')
+  expect(await ui.find({ type: 'Text', text: /━/ })).toBe(undefined)
   await ui.unmount()
 })
