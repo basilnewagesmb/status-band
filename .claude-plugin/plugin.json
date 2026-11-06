@@ -1,0 +1,6 @@
+{
+  "name": "status-band",
+  "version": "0.1.0",
+  "description": "A row above the prompt with the git branch, changed-file count and the last pnpm check result.",
+  "types": "./types/index.d.ts"
+}
